@@ -479,16 +479,16 @@ st_data = st_folium(
 )
 
 
-st.subheader("Times")
-
 
 # -----------------------------
 # FILTER DATA
 # -----------------------------
 
+
 # Lap times
-lap_df_times = lap_times.copy()
-lap_df_times["lap"] = lap_df_times.index + 1
+lap_df_times = lap_times.copy()   # ✅ DENNA SAKNAS
+
+lap_df_times["lap"] = lap_df_times.index + 1 
 
 lap_df_times = lap_df_times[
     lap_df_times["lap"].isin(selected_laps)
@@ -499,7 +499,13 @@ lap_df_times = lap_df_times.set_index("lap")
 # Sector times
 filtered_sector_times = sector_times[
     sector_times["lap"].isin(selected_laps)
-]
+].copy()
+
+# ✅ viktigt (fixar duplicate crash utan att ändra logik)
+filtered_sector_times = filtered_sector_times.drop_duplicates(
+    subset=["lap", "sector"],
+    keep="first"
+)
 
 sector_pivot = filtered_sector_times.pivot(
     index="lap",
@@ -602,12 +608,6 @@ styled = (
     .format("{:.3f}")
 )
 
-# -----------------------------
-# SHOW
-# -----------------------------
-
-st.markdown(styled.to_html(), unsafe_allow_html=True)
-
 
 
 
@@ -616,7 +616,7 @@ st.markdown(styled.to_html(), unsafe_allow_html=True)
 # GG DIAGRAM
 # =============================================================================
 
-st.subheader("GG Diagram")
+#st.subheader("GG Diagram")
 
 fig, ax = plt.subplots(figsize=(4, 4))
 
@@ -686,7 +686,7 @@ ax.axvline(0, color="white", linewidth=1)
 ax.scatter(
     0, 0,
     color="orange",
-    s=100,                # lite större
+    s=75,                # lite större
     edgecolor="black",    # ✅ svart ring
     linewidth=0.5,          # ✅ tjocklek på ringen
     zorder=6
@@ -738,9 +738,146 @@ for r in radii:
     ])
 
 
+# -----------------------------
+# SHOW
+# -----------------------------
 
 
 
-#st.pyplot(fig)
-st.pyplot(fig, use_container_width=False)
 
+
+col_times, col_gg = st.columns([1.2, 1])
+
+with col_times:
+    st.subheader("Times")
+    st.markdown(styled.to_html(), unsafe_allow_html=True)
+
+with col_gg:
+    st.subheader("GG Diagram")
+    st.pyplot(fig, use_container_width=False)
+
+
+
+# -----------------------------
+# SECTOR ANALYSIS
+# -----------------------------
+# -----------------------------
+# SECTOR ANALYSIS (SAFE VERSION)
+# -----------------------------
+
+st.subheader("Sector Analysis")
+
+# 👉 snabbaste varv (använd redan existerande data)
+valid_laps = combined.loc[combined.index != "Ideal"]
+
+if len(valid_laps) == 0:
+    st.warning("No laps selected")
+else:
+    fastest_lap = valid_laps["lap_time"].idxmin()
+
+    # 👉 lokal mapping (påverkar inget annat)
+    sector_map = {
+        "START": "S1",
+        "S1": "S2",
+        "S2": "S3",
+        "S3": "S4",
+        "S4": "S5",
+        "S5": "S6"
+    }
+
+    for sector in sorted(sector_pivot.columns):
+
+        st.markdown(f"### Sector {sector}")
+
+        col_map, col_plot = st.columns([1, 1])
+
+        # -----------------------------
+        # HÄMTA DATA
+        # -----------------------------
+
+        best_sector_row = filtered_sector_times[
+            filtered_sector_times["sector"] == sector
+        ].sort_values("sector_time").iloc[0]
+
+        best_lap = best_sector_row["lap"]
+
+        # 👉 OBS: använder ORIGINAL df (ingen mutation)
+        df_sector_best = df[
+            (df["lap"] == best_lap) &
+            (df["sector"].map(sector_map) == sector)
+        ]
+
+        df_sector_fast = df[
+            (df["lap"] == fastest_lap) &
+            (df["sector"].map(sector_map) == sector)
+        ]
+
+        if df_sector_best.empty or df_sector_fast.empty:
+            continue
+
+        # -----------------------------
+        # MAP
+        # -----------------------------
+        
+        with col_map:
+
+            m_sector = folium.Map(
+                location=center,
+                zoom_start=16,
+                tiles="OpenStreetMap"
+            )
+
+            folium.PolyLine(
+                df_sector_best[["lat", "lon"]].values,
+                color="red",
+                weight=5
+            ).add_to(m_sector)
+
+            folium.PolyLine(
+                df_sector_fast[["lat", "lon"]].values,
+                color="blue",
+                weight=3
+            ).add_to(m_sector)
+
+            st_folium(m_sector, height=300)
+
+        # -----------------------------
+        # PLOT
+        # -----------------------------
+        
+  
+        with col_plot:
+        
+            fig_s, ax_s = plt.subplots(figsize=(4, 3))
+        
+            # ✅ NORMALISERA TID (starta på 0)
+            t_best = df_sector_best["Elapsed time (s)"]
+            t_best = t_best - t_best.iloc[0]
+        
+            t_fast = df_sector_fast["Elapsed time (s)"]
+            t_fast = t_fast - t_fast.iloc[0]
+        
+            # ✅ BEST
+            ax_s.plot(
+                t_best,
+                df_sector_best["Speed (km/h)"],
+                color="red",
+                label=f"Best {sector}"
+            )
+        
+            # ✅ FASTEST LAP
+            ax_s.plot(
+                t_fast,
+                df_sector_fast["Speed (km/h)"],
+                color="blue",
+                linestyle="--",
+                label="Fastest lap"
+            )
+        
+            ax_s.set_title(sector)
+            ax_s.set_xlabel("Time (s)")
+            ax_s.set_ylabel("Speed (km/h)")
+            ax_s.grid(True)
+            ax_s.legend(fontsize=8)
+        
+            st.pyplot(fig_s)
