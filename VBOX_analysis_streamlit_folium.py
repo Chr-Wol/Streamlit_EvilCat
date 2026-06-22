@@ -8,6 +8,16 @@ kör med cmd sedan
 cd OneDrive - Polestar\Python Scripts\VBox
 streamlit run VBOX_analysis_streamlit_folium.py
 
+ToDo:
+- lägg in fler banor.
+- strukturera om koden så alla beräkningar sker i process session. 
+- gör GitHub repot provat.
+- lägg till option på att analysera varje segment. (de begöver ju inte vara med fr start.)
+- analysera förare mot förare. dvs 2st dbm mot varandra.
+
+
+
+
 """
 
 
@@ -23,40 +33,196 @@ import numpy as np
 
 import matplotlib.patheffects as path_effects
 
+import subprocess
+import os
+import io
 
 
-# =============================================================================
-# LOAD PICKLE
-# =============================================================================
-
-uploaded_file = st.sidebar.file_uploader(
-    "Choose session pickle to analyze",
-    type=["pkl"]
-)
 
 
-if uploaded_file is None:
+# ==========================================
+# HEADER
+# ==========================================
+
+col1, col2 = st.columns([4, 1])
+
+with col1:
+    st.title("EvilCat VBox Data Analyzer App")
+
+with col2:
+    st.image("EvilCat_racing_team.jpg", width=120)
+
+
+#------------
+#  mode selector
+# ----------
+
+#st.sidebar.title("Mode")
+st.sidebar.title("Session")
+print("SESSION STATE:", st.session_state)
+
+
+
+# ==========================================
+# SESSION STATE INIT
+# ==========================================
+
+if "data_loaded" not in st.session_state:
+    st.session_state["data_loaded"] = False
+
+if "use_prepared" not in st.session_state:
+    st.session_state["use_prepared"] = False
+
+
+# ==========================================
+# STEP 1: LOAD OR PREPARE DATA
+# ==========================================
+
+if not st.session_state["data_loaded"]:
+
+    st.title("Load or Prepare Data")
+
+    tab1, tab2 = st.tabs(["Prepare data", "Load pickle file"])
+
+    # -------------------------
+    # PREPARE DATA
+    # -------------------------
+    with tab1:
+
+        dbn_file = st.file_uploader("Drop DBN file", type=["dbn"])
+        track = st.selectbox("Track", ["Ring_Knutstorp", "Mantorp"])
+
+        if st.button("Prepare data"):
+
+            if dbn_file is None:
+                st.warning("Please upload a DBN file")
+            else:
+                session_name = os.path.splitext(dbn_file.name)[0]
+
+                with open("temp.dbn", "wb") as f:
+                    f.write(dbn_file.getbuffer())
+
+                cmd = ["python", "process_session.py", session_name, track]
+                subprocess.run(cmd, check=True)
+
+                st.session_state["use_prepared"] = True
+                st.session_state["session_name"] = session_name
+                st.session_state["data_loaded"] = True
+
+                st.success("Data prepared!")
+                st.rerun()
+
+    # -------------------------
+    # LOAD PICKLE
+    # -------------------------
+    with tab2:
+
+        uploaded_file = st.file_uploader("Drop pickle file", type=["pkl"])
+
+        if uploaded_file is not None:
+            st.session_state["uploaded_file"] = uploaded_file
+            st.session_state["use_prepared"] = False
+            st.session_state["data_loaded"] = True
+
+            st.rerun()
+
     st.stop()
 
 
-session_data = pickle.load(
-    uploaded_file
-)
+# ✅ AUTO SWITCH
+if st.session_state.get("force_analyze"):
+    mode = "Analyze data"
+    #st.session_state["force_analyze"] = False
+
+
+# ✅ AUTO SWITCH till Analyze
+#if st.session_state.get("use_prepared"):
+#    st.sidebar.success("Using prepared data")
+
+
+
+
+
+
+
+# ==========================================
+# LOAD SESSION DATA
+# ==========================================
+
+session_data = None
+current_file_name = None
+
+# ✅ prepared data
+if st.session_state.get("use_prepared"):
+
+    session_name = st.session_state["session_name"]
+    pkl_file_path = f"Analysis_{session_name}.pkl"
+
+    if os.path.exists(pkl_file_path):
+        with open(pkl_file_path, "rb") as f:
+            session_data = pickle.load(f)
+
+        current_file_name = session_name
+    else:
+        st.error("Pickle not found!")
+        st.stop()
+
+# ✅ uploaded pickle
+else:
+
+
+    uploaded_file = st.session_state["uploaded_file"]
+
+    session_data = pickle.load(
+        io.BytesIO(uploaded_file.getvalue())
+    )
+
+    current_file_name = uploaded_file.name
+
+
+
+
+
+
+# ✅ safety
+if session_data is None:
+    st.stop()
+
+
+# ==========================================
+# RESET BUTTON SIDEBAR
+# ==========================================
+
+#st.sidebar.title("Session")
+st.sidebar.success("Data loaded ✅")
+
+if st.sidebar.button("Reset"):
+    st.session_state.clear()
+    st.rerun()
+
+
+
+
+
 
 df = pd.DataFrame(
     session_data["telemetry"]
 )
+df = df[df["lap"] > 0]
 
-if "last_file_name" not in st.session_state or st.session_state.last_file_name != uploaded_file.name:
+
+
+if "last_file_name" not in st.session_state or st.session_state.last_file_name != current_file_name:
     st.session_state.selected_laps = sorted(df["lap"].unique())
-    st.session_state.last_file_name = uploaded_file.name
-
+    st.session_state.last_file_name = current_file_name
 
 
 
 lap_times = pd.DataFrame(
     session_data["lap_times"]
 )
+lap_times = lap_times[lap_times["lap"] > 0]
+
 
 start_line = session_data["start_line"]
 
@@ -66,6 +232,7 @@ sector_lines = session_data["sector_lines"]
 sector_times = pd.DataFrame(
     session_data["sector_times"]
 )
+sector_times = sector_times[sector_times["lap"] > 0]
 
 track_name = session_data.get("track_name", "Unknown track")
 
@@ -83,6 +250,9 @@ st.set_page_config(
 
 st.title(f"EvilCat performance review - {track_name}")
 
+
+if st.session_state.get("use_prepared"):
+    st.info(f"Using prepared data: {st.session_state.get('session_name')}")
 
 
 
@@ -135,10 +305,37 @@ show_brake = st.sidebar.checkbox(
     value=True
 )
 
+brake_threshold = st.sidebar.slider(
+    "Brake threshold (g)",
+    min_value=-1.0,
+    max_value=-0.2,
+    value=-0.6,
+    step=0.05
+)
+
+
 show_latg = st.sidebar.checkbox(
     "Show lateral G vectors",
     value=False
 )
+
+st.sidebar.markdown("###")   # ✅ mellanrum
+
+st.sidebar.image(
+    "EvilCat_racing_team.jpg", width=80,
+    
+)
+
+# + fade med little hack
+st.sidebar.markdown(
+    """
+    <style>
+    img {opacity: 0.3;}
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 
 
 # =============================================================================
@@ -252,9 +449,10 @@ for i, lap in enumerate(selected_laps):
     if show_brake:
 
         brake_df = lap_df[
-            lap_df[
-                "Longitudinal acceleration (g)"
-            ] < -0.6
+            lap_df["Longitudinal acceleration (g)"] < brake_threshold
+            #lap_df[
+            #    "Longitudinal acceleration (g)"
+            #] < -0.6
         ]
 
         for _, row in brake_df.iterrows():
@@ -272,7 +470,7 @@ for i, lap in enumerate(selected_laps):
 
                 radius=2 + brake_g * 6,
 
-                color="cyan",
+                color="red", # "cyan"
 
                 fill=True,
 
@@ -488,7 +686,7 @@ st_data = st_folium(
 # Lap times
 lap_df_times = lap_times.copy()   # ✅ DENNA SAKNAS
 
-lap_df_times["lap"] = lap_df_times.index + 1 
+lap_df_times["lap"] = lap_df_times.index
 
 lap_df_times = lap_df_times[
     lap_df_times["lap"].isin(selected_laps)
