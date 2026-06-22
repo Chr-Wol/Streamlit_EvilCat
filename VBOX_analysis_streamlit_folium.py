@@ -138,7 +138,7 @@ if not st.session_state["data_loaded"]:
                 st.session_state["data_loaded"] = True
 
                 st.success("Data prepared!")
-                #st.rerun()
+                st.rerun()
 
     # -------------------------
     # LOAD PICKLE
@@ -152,7 +152,7 @@ if not st.session_state["data_loaded"]:
             st.session_state["use_prepared"] = False
             st.session_state["data_loaded"] = True
 
-            #st.rerun()
+            st.rerun()
 
     st.stop()
 
