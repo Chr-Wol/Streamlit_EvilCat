@@ -116,6 +116,7 @@ if not st.session_state["data_loaded"]:
                     sys.executable,
                     "process_session.py",
                     "temp.dbn",
+                    session_name,
                     track
                 ]
 

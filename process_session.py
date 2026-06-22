@@ -35,7 +35,7 @@ from geopy.distance import geodesic
 # =============================================================================
 # INPUT ARGUMENTS
 # =============================================================================
-if len(sys.argv) < 3:
+if len(sys.argv) < 4:
 
     print(
         "Usage:\n"
@@ -50,7 +50,7 @@ session_name = sys.argv[2]
 track_name = sys.argv[3]
 #input_file = f"DATA/{file_name}.csv"
 #input_file = f"DATA/{file_name}.DBN"  # <-- behövs när man kör local't
-
+input_file = sys.argv[1]
 
 
 
