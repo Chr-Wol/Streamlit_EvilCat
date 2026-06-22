@@ -47,13 +47,14 @@ import io
 # HEADER
 # ==========================================
 
-st.write(os.getcwd())
-st.write(os.listdir("."))
+
 
 col1, col2 = st.columns([4, 1])
 
 with col1:
     st.title("EvilCat VBox Data Analyzer App")
+    st.write(os.getcwd())
+    st.write(os.listdir("."))
 
 with col2:
     st.image("EvilCat_racing_team.jpg", width=120)
