@@ -118,6 +118,9 @@ if not st.session_state["data_loaded"]:
                     text=True
                 )
                 
+                st.write("Files in folder:")
+                st.write(os.listdir("."))
+
                 st.write("Return code:", result.returncode)
                 st.code(result.stdout)
                 st.code(result.stderr)
