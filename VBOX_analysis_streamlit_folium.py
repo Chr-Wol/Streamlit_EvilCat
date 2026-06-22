@@ -111,13 +111,14 @@ if not st.session_state["data_loaded"]:
                     f.write(dbn_file.getbuffer())
 
                 #cmd = ["python", "process_session.py", session_name, track]
-                
+                       
                 cmd = [
                     sys.executable,
                     "process_session.py",
-                    session_name,
+                    "temp.dbn",
                     track
                 ]
+
 
                 
                 result = subprocess.run(

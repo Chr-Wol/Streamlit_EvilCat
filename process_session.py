@@ -46,10 +46,10 @@ if len(sys.argv) < 3:
 
     sys.exit()
 file_name = sys.argv[1]
-track_name = sys.argv[2]
-
+session_name = sys.argv[2]
+track_name = sys.argv[3]
 #input_file = f"DATA/{file_name}.csv"
-input_file = f"DATA/{file_name}.DBN"
+#input_file = f"DATA/{file_name}.DBN"  # <-- behövs när man kör local't
 
 
 
@@ -538,9 +538,10 @@ session_data = {
 # SAVE PICKLE
 # =============================================================================
 
-base_name = Path(input_file).stem
+#base_name = Path(input_file).stem
 
-output_pkl = f"Analysis_{base_name}.pkl"
+#output_pkl = f"Analysis_{base_name}.pkl"
+output_pkl = f"Analysis_{session_name}.pkl"
 
 with open(output_pkl, "wb") as f:
 
