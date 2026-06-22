@@ -111,7 +111,16 @@ if not st.session_state["data_loaded"]:
                     f.write(dbn_file.getbuffer())
 
                 cmd = ["python", "process_session.py", session_name, track]
-                subprocess.run(cmd, check=True)
+                
+                result = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True
+                )
+                
+                st.write("Return code:", result.returncode)
+                st.code(result.stdout)
+                st.code(result.stderr)
 
                 st.session_state["use_prepared"] = True
                 st.session_state["session_name"] = session_name
