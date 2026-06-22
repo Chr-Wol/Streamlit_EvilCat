@@ -53,8 +53,8 @@ col1, col2 = st.columns([4, 1])
 
 with col1:
     st.title("EvilCat VBox Data Analyzer App")
-    st.write(os.getcwd())
-    st.write(os.listdir("."))
+    #st.write(os.getcwd())
+    #st.write(os.listdir("."))
 
 with col2:
     #st.image("EvilCat_racing_team.jpg", width=120)
@@ -329,10 +329,10 @@ show_latg = st.sidebar.checkbox(
 
 st.sidebar.markdown("###")   # ✅ mellanrum
 
-#st.sidebar.image(
-#    "EvilCat_racing_team.jpg", width=80,
-#    
-#)
+st.sidebar.image(
+    "EvilCat_racing_team.jpg", width=80,
+    
+)
 
 # + fade med little hack
 st.sidebar.markdown(
