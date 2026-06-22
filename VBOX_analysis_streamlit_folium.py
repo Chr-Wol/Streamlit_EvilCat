@@ -351,20 +351,19 @@ show_latg = st.sidebar.checkbox(
 
 st.sidebar.markdown("###")   # ✅ mellanrum
 
-st.sidebar.image(
-    "EvilCat_racing_team.jpg", width=80,
-    
-)
+#st.sidebar.image(
+#    "EvilCat_racing_team.jpg", width=80,    
+#)
 
 # + fade med little hack
-st.sidebar.markdown(
-    """
-    <style>
-    img {opacity: 0.3;}
-    </style>
-    """,
-    unsafe_allow_html=True
-)
+#st.sidebar.markdown(
+#    """
+#    <style>
+#    img {opacity: 0.3;}
+#    </style>
+#    """,
+#    unsafe_allow_html=True
+#)
 
 
 
