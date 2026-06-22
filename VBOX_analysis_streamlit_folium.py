@@ -40,9 +40,15 @@ import io
 
 
 
+
+
+
 # ==========================================
 # HEADER
 # ==========================================
+
+st.write(os.getcwd())
+st.write(os.listdir("."))
 
 col1, col2 = st.columns([4, 1])
 
