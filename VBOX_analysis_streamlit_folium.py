@@ -57,7 +57,8 @@ with col1:
     st.write(os.listdir("."))
 
 with col2:
-    st.image("EvilCat_racing_team.jpg", width=120)
+    #st.image("EvilCat_racing_team.jpg", width=120)
+    st.write("No image")
 
 
 #------------
