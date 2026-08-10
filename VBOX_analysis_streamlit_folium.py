@@ -9,9 +9,8 @@ cd OneDrive - Polestar\Python Scripts\VBox
 streamlit run VBOX_analysis_streamlit_folium.py
 
 ToDo:
-- lägg in fler banor.
+
 - strukturera om koden så alla beräkningar sker i process session. 
-- gör GitHub repot provat.
 - lägg till option på att analysera varje segment. (de begöver ju inte vara med fr start.)
 - analysera förare mot förare. dvs 2st dbm mot varandra.
 
@@ -98,7 +97,7 @@ if not st.session_state["data_loaded"]:
     with tab1:
 
         dbn_file = st.file_uploader("Drop DBN file", type=["dbn"])
-        track = st.selectbox("Track", ["Ring_Knutstorp", "Mantorp"])
+        track = st.selectbox("Track", ["Ring_Knutstorp", "Anderstorp_Scandinavian_Raceway"])
 
         if st.button("Prepare data"):
 
