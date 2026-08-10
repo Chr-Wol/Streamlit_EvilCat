@@ -49,7 +49,7 @@ tracks = {
     "Anderstorp_Scandinavian_Raceway": {
 
         "start_line": [
-            (13.598976, 57.261633),
+            (13.599525, 57.261460),
             (13.599097, 57.261595),
         ],
 
