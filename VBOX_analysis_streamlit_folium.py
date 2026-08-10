@@ -133,9 +133,13 @@ if not st.session_state["data_loaded"]:
                 st.write("Return code:", result.returncode)
                 st.code(result.stdout)
                 st.code(result.stderr)
+                if result.returncode != 0:
+                    st.error("process_session failed")
+                    st.stop()
 
                 st.session_state["use_prepared"] = True
                 st.session_state["session_name"] = session_name
+                
                 st.session_state["data_loaded"] = True
 
                 st.success("Data prepared!")
