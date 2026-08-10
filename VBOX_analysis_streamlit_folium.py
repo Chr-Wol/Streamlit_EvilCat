@@ -38,7 +38,7 @@ import io
 import sys
 
 
-
+from tracks import tracks
 
 
 
@@ -89,7 +89,7 @@ if not st.session_state["data_loaded"]:
 
     st.title("Load or Prepare Data")
 
-    tab1, tab2 = st.tabs(["Prepare data", "Load pickle file"])
+    tab1, tab2, tab3 = st.tabs(["DBN file", "Load pickle file","check track map" ])
 
     # -------------------------
     # PREPARE DATA
@@ -159,7 +159,76 @@ if not st.session_state["data_loaded"]:
 
             st.rerun()
 
-    st.stop()
+    # -------------------------
+    # LOAD PICKLE
+    # -------------------------
+    with tab2:
+
+        uploaded_file = st.file_uploader("Drop pickle file", type=["pkl"])
+
+        if uploaded_file is not None:
+            st.session_state["uploaded_file"] = uploaded_file
+            st.session_state["use_prepared"] = False
+            st.session_state["data_loaded"] = True
+
+            st.rerun()
+
+    # -------------------------
+    # CHECK TRACK MAP
+    # -------------------------
+    # -------------------------
+  # CHECK TRACK MAP
+  # -------------------------
+    with tab3:
+        track_check = st.selectbox(    "Track",  list(tracks.keys()), key="track_check"  )
+
+        track_data = tracks[track_check]
+
+        start_line = track_data["start_line"]
+        sector_lines = track_data["sector_lines"]
+
+        center = [
+          np.mean([p[1] for p in start_line]),
+          np.mean([p[0] for p in start_line])
+        ]
+
+        m = folium.Map(location=center, zoom_start=16)
+
+        folium.PolyLine(
+              [
+                  [start_line[0][1], start_line[0][0]],
+                  [start_line[1][1], start_line[1][0]]
+              ],
+              color="red",
+              weight=5,
+              tooltip="Start/Finish"
+        ).add_to(m)
+
+        for sector_name, coords in sector_lines.items():
+
+          folium.PolyLine(
+              [
+                  [coords[0][1], coords[0][0]],
+                  [coords[1][1], coords[1][0]]
+              ],
+              color="yellow",
+              weight=5,
+              tooltip=sector_name
+          ).add_to(m)
+
+          folium.Marker(
+              [
+                  (coords[0][1] + coords[1][1]) / 2,
+                  (coords[0][0] + coords[1][0]) / 2
+              ],
+              tooltip=sector_name
+          ).add_to(m)
+
+        st_folium(m, height=700, width=None)
+
+
+st.stop()
+
 
 
 # ✅ AUTO SWITCH
