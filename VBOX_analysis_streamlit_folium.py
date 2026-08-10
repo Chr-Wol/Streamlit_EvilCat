@@ -160,23 +160,6 @@ if not st.session_state["data_loaded"]:
             st.rerun()
 
     # -------------------------
-    # LOAD PICKLE
-    # -------------------------
-    with tab2:
-
-        uploaded_file = st.file_uploader("Drop pickle file", type=["pkl"])
-
-        if uploaded_file is not None:
-            st.session_state["uploaded_file"] = uploaded_file
-            st.session_state["use_prepared"] = False
-            st.session_state["data_loaded"] = True
-
-            st.rerun()
-
-    # -------------------------
-    # CHECK TRACK MAP
-    # -------------------------
-    # -------------------------
   # CHECK TRACK MAP
   # -------------------------
     with tab3:
