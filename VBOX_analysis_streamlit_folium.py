@@ -227,7 +227,7 @@ if not st.session_state["data_loaded"]:
         st_folium(m, height=700, width=None)
 
 
-st.stop()
+    st.stop()
 
 
 
