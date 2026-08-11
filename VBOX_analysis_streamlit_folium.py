@@ -233,7 +233,7 @@ if not st.session_state["data_loaded"]:
             ],
             icon=folium.DivIcon(    
                 icon_size=(130, 30),
-                icon_anchor=(75, 40),
+                icon_anchor=(65, 40),
                 html="""
                 <div style="
                     font-size: 14px;
@@ -273,7 +273,7 @@ if not st.session_state["data_loaded"]:
                 ],
                 icon=folium.DivIcon(
                     icon_size=(40, 30),
-                    icon_anchor=(40, 40),
+                    icon_anchor=(20, 40),
                     html=f"""
                     <div style="
                         font-size: 14px;
