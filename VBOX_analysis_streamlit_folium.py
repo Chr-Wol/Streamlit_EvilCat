@@ -177,7 +177,41 @@ if not st.session_state["data_loaded"]:
             np.mean([p[0] for p in start_line])
         ]
     
-        m = folium.Map(location=center, zoom_start=16)
+        m = folium.Map(
+            location=center,
+            zoom_start=16,
+            tiles=None,
+            control_scale=True
+        )
+        
+        folium.TileLayer(
+            "OpenStreetMap",
+            name="OpenStreetMap",
+            overlay=False,
+            control=True
+        ).add_to(m)
+        
+        folium.TileLayer(
+            "CartoDB positron",
+            name="Light",
+            overlay=False,
+            control=True
+        ).add_to(m)
+        
+        folium.TileLayer(
+            "CartoDB dark_matter",
+            name="Dark",
+            overlay=False,
+            control=True
+        ).add_to(m)
+        
+        folium.TileLayer(
+            tiles="https://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}",
+            attr="Google",
+            name="Google Satellite",
+            overlay=False,
+            control=True
+        ).add_to(m)
     
         # ---------------------------
         # START / FINISH LINE
