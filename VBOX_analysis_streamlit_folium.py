@@ -198,14 +198,32 @@ if not st.session_state["data_loaded"]:
               weight=5,
               tooltip=sector_name
           ).add_to(m)
-
+          
           folium.Marker(
-              [
-                  (coords[0][1] + coords[1][1]) / 2,
-                  (coords[0][0] + coords[1][0]) / 2
-              ],
-              tooltip=sector_name
+                [
+                    (start_line[0][1] + start_line[1][1]) / 2,
+                    (start_line[0][0] + start_line[1][0]) / 2
+                ],
+                icon=folium.DivIcon(
+                    html="""
+                    <div style="
+                        font-size: 14px;
+                        font-weight: bold;
+                        color: white;
+                        background-color: black;
+                        padding: 2px 6px;
+                        border-radius: 4px;
+                        white-space: nowrap;
+                    ">
+                        START/FINISH
+                    </div>
+                    """
+                    )
           ).add_to(m)
+          
+          
+          
+
 
         st_folium(m, height=700, width=None)
 
