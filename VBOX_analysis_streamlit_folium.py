@@ -160,74 +160,106 @@ if not st.session_state["data_loaded"]:
             st.rerun()
 
     # -------------------------
-  # CHECK TRACK MAP
-  # -------------------------
+    # CHECK TRACK MAP
+    # -------------------------
     with tab3:
-        track_check = st.selectbox(    "Track",  list(tracks.keys()), key="track_check"  )
-
+        track_check = st.selectbox(
+            "Track", list(tracks.keys()), key="track_check"
+        )
+    
         track_data = tracks[track_check]
-
+    
         start_line = track_data["start_line"]
         sector_lines = track_data["sector_lines"]
-
+    
         center = [
-          np.mean([p[1] for p in start_line]),
-          np.mean([p[0] for p in start_line])
+            np.mean([p[1] for p in start_line]),
+            np.mean([p[0] for p in start_line])
         ]
-
+    
         m = folium.Map(location=center, zoom_start=16)
-
+    
+        # ---------------------------
+        # START / FINISH LINE
+        # ---------------------------
         folium.PolyLine(
-              [
-                  [start_line[0][1], start_line[0][0]],
-                  [start_line[1][1], start_line[1][0]]
-              ],
-              color="red",
-              weight=5,
-              tooltip="Start/Finish"
+            [
+                [start_line[0][1], start_line[0][0]],
+                [start_line[1][1], start_line[1][0]]
+            ],
+            color="red",
+            weight=5,
+            tooltip="Start/Finish"
         ).add_to(m)
-
+    
+        folium.Marker(
+            [
+                (start_line[0][1] + start_line[1][1]) / 2,
+                (start_line[0][0] + start_line[1][0]) / 2
+            ],
+            icon=folium.DivIcon(
+                icon_size=(150, 30),
+                icon_anchor=(75, 15),
+                html="""
+                <div style="
+                    font-size: 14px;
+                    font-weight: bold;
+                    color: white;
+                    background-color: black;
+                    padding: 2px 6px;
+                    border-radius: 4px;
+                    white-space: nowrap;
+                    text-align: center;
+                ">
+                    START/FINISH
+                </div>
+                """
+            )
+        ).add_to(m)
+    
+        # ---------------------------
+        # SECTOR LINES
+        # ---------------------------
         for sector_name, coords in sector_lines.items():
-
-          folium.PolyLine(
-              [
-                  [coords[0][1], coords[0][0]],
-                  [coords[1][1], coords[1][0]]
-              ],
-              color="yellow",
-              weight=5,
-              tooltip=sector_name
-          ).add_to(m)
-          
-          folium.Marker(
+    
+            folium.PolyLine(
                 [
-                    (start_line[0][1] + start_line[1][1]) / 2,
-                    (start_line[0][0] + start_line[1][0]) / 2
+                    [coords[0][1], coords[0][0]],
+                    [coords[1][1], coords[1][0]]
+                ],
+                color="yellow",
+                weight=5,
+                tooltip=sector_name
+            ).add_to(m)
+    
+            folium.Marker(
+                [
+                    (coords[0][1] + coords[1][1]) / 2,
+                    (coords[0][0] + coords[1][0]) / 2
                 ],
                 icon=folium.DivIcon(
-                    html="""
+                    icon_size=(80, 30),
+                    icon_anchor=(40, 15),
+                    html=f"""
                     <div style="
                         font-size: 14px;
                         font-weight: bold;
-                        color: white;
-                        background-color: black;
+                        color: black;
+                        background-color: white;
                         padding: 2px 6px;
                         border-radius: 4px;
+                        border: 1px solid black;
                         white-space: nowrap;
+                        text-align: center;
                     ">
-                        START/FINISH
+                        {sector_name}
                     </div>
                     """
-                    )
-          ).add_to(m)
-          
-          
-          
-
-
+                )
+            ).add_to(m)
+    
         st_folium(m, height=700, width=None)
-
-
+    
     st.stop()
 
 
